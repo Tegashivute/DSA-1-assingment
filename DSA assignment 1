@@ -1,0 +1,167 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+class Contact {
+private String name;
+private String phoneNumber;
+public Contact(String name, String phoneNumber) {
+this.name = name;
+this.phoneNumber = phoneNumber;
+}
+public String getName() {
+return name;
+}
+public String getPhoneNumber() {
+return phoneNumber;
+}
+@Override
+public String toString() {
+return "Name: " + name + ", Phone Number: " + phoneNumber;
+}
+}
+class Phonebook {
+private ArrayList<Contact> contacts;
+public Phonebook() {
+this.contacts = new ArrayList<>();
+}
+public void insertContact(String name, String phoneNumber) {
+contacts.add(new Contact(name, phoneNumber));
+}
+public Contact searchContact(String name) {
+for (Contact contact : contacts) {
+if (contact.getName().equalsIgnoreCase(name)) {
+return contact;
+}
+}
+return null;
+}
+public void displayAllContacts(JTextArea displayArea) {
+displayArea.setText(""); // Clear display
+if (contacts.isEmpty()) {
+displayArea.append("No contacts in the phonebook.\n");
+} else {
+for (Contact contact : contacts) {
+displayArea.append(contact.toString() + "\n");
+}
+}
+}
+public void deleteContact(String name) {
+Contact contact = searchContact(name);
+if (contact != null) {
+contacts.remove(contact);
+}
+}
+public void updateContact(String name, String newName, String newPhoneNumber) {
+Contact contact = searchContact(name);
+if (contact != null) {
+if (newName != null) contact = new Contact(newName, contact.getPhoneNumber());
+if (newPhoneNumber != null) contact = new Contact(contact.getName(), newPhoneNumber);
+}
+}
+public void sortContacts() {
+Collections.sort(contacts, Comparator.comparing(Contact::getName));
+}
+}
+public class PhonebookGUI extends JFrame {
+private Phonebook phonebook;
+private JTextField nameField;
+private JTextField phoneField;
+private JTextArea displayArea;
+public PhonebookGUI() {
+phonebook = new Phonebook();
+// Set up the frame
+setTitle("Phonebook GUI");
+setSize(400, 400);
+setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+setLayout(new BorderLayout());
+// Input panel
+JPanel inputPanel = new JPanel();
+inputPanel.setLayout(new GridLayout(2, 2));
+inputPanel.add(new JLabel("Name:"));
+nameField = new JTextField();
+inputPanel.add(nameField);
+inputPanel.add(new JLabel("Phone Number:"));
+phoneField = new JTextField();
+inputPanel.add(phoneField);
+add(inputPanel, BorderLayout.NORTH);
+// Buttons panel
+JPanel buttonPanel = new JPanel();
+buttonPanel.setLayout(new GridLayout(2, 3));
+JButton insertButton = new JButton("Insert");
+JButton searchButton = new JButton("Search");
+JButton displayButton = new JButton("Display All");
+JButton deleteButton = new JButton("Delete");
+JButton updateButton = new JButton("Update");
+JButton sortButton = new JButton("Sort");
+buttonPanel.add(insertButton);
+buttonPanel.add(searchButton);
+buttonPanel.add(displayButton);
+buttonPanel.add(deleteButton);
+buttonPanel.add(updateButton);
+buttonPanel.add(sortButton);
+add(buttonPanel, BorderLayout.CENTER);
+// Display area
+displayArea = new JTextArea();
+add(new JScrollPane(displayArea), BorderLayout.SOUTH);
+// Add action listeners
+insertButton.addActionListener(new ActionListener() {
+public void actionPerformed(ActionEvent e) {
+String name = nameField.getText();
+String phoneNumber = phoneField.getText();
+phonebook.insertContact(name, phoneNumber);
+displayArea.append("Contact added: " + name + "\n");
+}
+});
+searchButton.addActionListener(new ActionListener() {
+public void actionPerformed(ActionEvent e) {
+String name = nameField.getText();
+Contact contact = phonebook.searchContact(name);
+if (contact != null) {
+displayArea.append("Found: " + contact + "\n");
+} else {
+displayArea.append("Contact not found: " + name + "\n");
+}
+}
+});
+displayButton.addActionListener(new ActionListener() {
+public void actionPerformed(ActionEvent e) {
+phonebook.displayAllContacts(displayArea);
+}
+});
+deleteButton.addActionListener(new ActionListener() {
+public void actionPerformed(ActionEvent e) {
+String name = nameField.getText();
+phonebook.deleteContact(name);
+displayArea.append("Deleted contact: " + name + "\n");
+}
+});
+updateButton.addActionListener(new ActionListener() {
+public void actionPerformed(ActionEvent e) {
+String name = nameField.getText();
+String newName = JOptionPane.showInputDialog("Enter new name (or press Cancel to keep current):");
+String newPhone = JOptionPane.showInputDialog("Enter new phone number (or press Cancel to keep
+current):");
+phonebook.updateContact(name, newName.isEmpty() ? null : newName, newPhone.isEmpty() ? null :
+newPhone);
+displayArea.append("Updated contact: " + name + "\n");
+}
+});
+sortButton.addActionListener(new ActionListener() {
+public void actionPerformed(ActionEvent e) {
+phonebook.sortContacts();
+displayArea.append("Contacts sorted.\n");
+}
+});
+}
+public static void main(String[] args) {
+SwingUtilities.invokeLater(new Runnable() {
+public void run() {
+new PhonebookGUI().setVisible(true);
+}
+});
+}
+}
